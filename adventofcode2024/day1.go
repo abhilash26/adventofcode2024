@@ -5,22 +5,12 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 )
 
-func sort(list *[]int) {
-	length := len(*list)
-	for i := 0; i < length-1; i++ {
-		for j := 0; j < length-i-1; j++ {
-			if (*list)[j] > (*list)[j+1] {
-				(*list)[j], (*list)[j+1] = (*list)[j+1], (*list)[j]
-			}
-		}
-	}
-}
-
-func Day1(inputFile string) {
+func parseInput(inputFile string) ([]int, []int) {
 	file, err := os.Open(inputFile)
 	if err != nil {
 		log.Fatal(err)
@@ -29,7 +19,6 @@ func Day1(inputFile string) {
 
 	list1 := []int{}
 	list2 := []int{}
-	totalDistance := 0
 
 	scanner := bufio.NewScanner(file)
 
@@ -54,32 +43,41 @@ func Day1(inputFile string) {
 		list2 = append(list2, num2)
 	}
 
-	sort(&list1)
-	sort(&list2)
+	if err := scanner.Err(); err != nil {
+		log.Fatal(err)
+	}
 
-	// Insertion sort can improve performance, when used within the loop
+	return list1, list2
+}
 
+func Day1(inputFile string) {
+	// Get input from file
+	list1, list2 := parseInput(inputFile)
+
+	// Sort the lists
+	sort.Ints(list1)
+	sort.Ints(list2)
+
+	// Initial Value
+	totalDistance := 0
 	difference := 0
 	similarityScoreTotal := 0
 
+	// To share the same loop for performance
 	for i := 0; i < len(list1); i++ {
-
+		// part 1
 		difference = list1[i] - list2[i]
 		if difference < 0 {
 			difference = 0 - difference
 		}
 		totalDistance += difference
 
-		// To share the same loop for performance
 		for j := 0; j < len(list2); j++ {
 			if list1[i] == list2[j] {
+				// part 2
 				similarityScoreTotal += list1[i]
 			}
 		}
-	}
-
-	if err := scanner.Err(); err != nil {
-		log.Fatal(err)
 	}
 
 	fmt.Printf("Part 1 %d\n", totalDistance)
