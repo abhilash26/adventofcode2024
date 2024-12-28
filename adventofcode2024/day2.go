@@ -9,45 +9,14 @@ import (
 	"strings"
 )
 
-func removeIndex(s []int, index int) []int {
-	ret := make([]int, 0)
-	ret = append(ret, s[:index]...)
-	return append(ret, s[index+1:]...)
-}
-
-func getInt(a string) int {
-	num, err := strconv.Atoi(a)
-	if err != nil {
-		log.Printf("Error converting %s to integer: %v", a, err)
-		return 0
-	}
-	return num
-}
-
-func checkAscending(l []int) bool {
-	for i := 0; i < len(l)-1; i++ {
-		d := l[i+1] - l[i]
-		if d < 1 || d > 3 {
-			return false
-		}
-	}
-	return true
-}
-
-func checkDecending(l []int) bool {
-	for i := 0; i < len(l)-1; i++ {
-		d := l[i] - l[i+1]
-		if d < 1 || d > 3 {
-			return false
-		}
-	}
-	return true
-}
-
 func isDampened(l []int) bool {
 	length := len(l)
 	for i := 0; i < length; i++ {
-		newSlice := removeIndex(l, i)
+		// Create a new slice with the item removed by index
+		newSlice := make([]int, 0, length-1)
+		newSlice = append(newSlice, l[:i]...)
+		newSlice = append(newSlice, l[i+1:]...)
+
 		if isSafe(newSlice) {
 			return true
 		}
@@ -56,7 +25,33 @@ func isDampened(l []int) bool {
 }
 
 func isSafe(l []int) bool {
-	return checkAscending(l) || checkDecending(l)
+	length := len(l)
+
+	if length < 2 {
+		return false
+	}
+
+	d := l[1] - l[0]
+	if d == 0 || (d < -3 || d > 3) {
+		return false
+	}
+
+	isAscending := d > 0
+
+	for i := 1; i < length-1; i++ {
+		d = l[i+1] - l[i]
+		if isAscending {
+			if d < 1 || d > 3 {
+				return false
+			}
+		} else {
+			if d > -1 || d < -3 {
+				return false
+			}
+		}
+	}
+
+	return true
 }
 
 func Day2(inputFile string) {
@@ -66,26 +61,28 @@ func Day2(inputFile string) {
 	}
 	defer file.Close()
 
-	safeSum := 0
-	safeSumDampener := 0
+	var safeSum, safeSumDampener int
 
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
-		levels := []int{}
 		line := scanner.Text()
 		parts := strings.Fields(line)
+		levels := make([]int, len(parts))
 
-		for _, part := range parts {
-			levels = append(levels, getInt(part))
+		for i, part := range parts {
+			num, err := strconv.Atoi(part)
+			if err != nil {
+				log.Printf("Error converting %s to integer: %v", part, err)
+				num = 0
+			}
+			levels[i] = num
 		}
 
 		if isSafe(levels) {
 			safeSum++
 			safeSumDampener++
-		} else {
-			if isDampened(levels) {
-				safeSumDampener++
-			}
+		} else if isDampened(levels) {
+			safeSumDampener++
 		}
 	}
 
