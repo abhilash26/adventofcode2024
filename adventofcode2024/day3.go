@@ -9,8 +9,7 @@ import (
 	"strconv"
 )
 
-func getOutputFromMultIns(ins string) int {
-	re := regexp.MustCompile(`(?m)mul\((\d+),(\d+)\)`)
+func getOutputFromMultIns(ins string, re *regexp.Regexp) int {
 	matches := re.FindAllStringSubmatch(ins, -1)
 	if matches != nil {
 		num1, err := strconv.Atoi(matches[0][1])
@@ -61,6 +60,7 @@ func Day3(inputFile string) {
 
 	on := true
 	var mult, mults, multsConditional int
+	re := regexp.MustCompile(`(?m)mul\((\d+),(\d+)\)`)
 
 	for _, instruction := range instructions {
 		switch instruction {
@@ -69,7 +69,7 @@ func Day3(inputFile string) {
 		case "don't()":
 			on = false
 		default:
-			mult = getOutputFromMultIns(instruction)
+			mult = getOutputFromMultIns(instruction, re)
 			mults += mult
 			if on {
 				multsConditional += mult
